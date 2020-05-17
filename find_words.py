@@ -16,7 +16,8 @@ class FindWords(object):
         self.output_dir = output_dir
         self.inoutfiles = list()
         self.extension = extension
-        self.result_cache_path = self._get_output_file("result")
+        self.result_cache_path = self._get_output_file("words_cache")
+        self.cache_files_path = self._get_output_file("files_cache")
 
     def run(self):
         self.find_file_names()
@@ -24,9 +25,8 @@ class FindWords(object):
         self.count_words()
 
     def find_file_names(self):
-        cacheFilesPath = self._get_output_file("files_cache")
         print_step = 1000
-        if not os.path.exists(cacheFilesPath) or os.path.getsize(cacheFilesPath) < 10:
+        if not os.path.exists(self.cache_files_path) or os.path.getsize(self.cache_files_path) < 10:
             for root, dirs, files in os.walk(self.input_dir):
                 for thefile in files:
                     if thefile.endswith(self.extension):
@@ -39,16 +39,16 @@ class FindWords(object):
                         self.inoutfiles.append(path)
                         len(self.inoutfiles)%print_step or print("\r%d files were found." % len(self.inoutfiles)*print_step, end="")
             print('\nFind files.')
-            self._write_list(cacheFilesPath, self.inoutfiles)
+            self._write_list(self.cache_files_path, self.inoutfiles)
         else:
             print('Read files cache.')
-            stream = codecs.open(cacheFilesPath, "r")
+            stream = codecs.open(self.cache_files_path, "r")
             for line in stream:
                 self.inoutfiles.append(line.strip())
 
     def find_words(self):
         if not os.path.exists(self.result_cache_path) or os.path.getsize(self.result_cache_path) < 10:
-            print('Find words.')
+            print('Find words form files.')
             print("Total number: %d" % len(self.inoutfiles))
 
             reg = re.compile(r"[_\-\s]?([A-Z][a-z]+|[a-z]+|[A-Z]+)[_\-\s]?")
